@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>testjs + firebase</title>
+        <link href="todo.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div id="root">
+            <div class="todo-list">
+                <div class="add-item">
+                    <input id="addText" name="addItem" type="text" value="">
+                    <button class="add-item-button" id="addTextButton">Add</button>
+                </div>
+                
+                <div id="todo-items">
+                </div>
+            </div>
+        </div>
+    </body>
+    
+    <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js" defer></script>
+    <script src="todo.js" defer></script>
+</html>

@@ -8,6 +8,7 @@ let todoClass = function(){
     this.db;
     this.firebase;
     this.addText = 'addText';
+    this.promise;
     
     this.getFirebaseConfig = function(){
         return {
@@ -47,13 +48,17 @@ let todoClass = function(){
     
     this.init = function() {
         this.todosData = [];
-        let docRef =  this.db.collection('items').get().then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                that.todosData.push(doc.data());
+        this.promise = new Promise(function(resolve, reject) {
+            let docRef =  that.db.collection('items').get().then(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    that.todosData.push(doc.data());
+                });
+            }).then(function(){
+                that.todosData.sort(that.compareNumeric);
+            }).then(function(){
+                //that.render();
+                resolve();
             });
-        }).then(function(){
-            that.todosData.sort(that.compareNumeric);
-            that.render();
         });
     };
 
@@ -69,6 +74,10 @@ let todoClass = function(){
         this.block_multiclick = true;
         this.db.collection('items').doc(id + '').delete().then(function() {
             that.init();
+        });
+        
+        this.promise.then(function(){
+            that.render();
         });
     };
 
@@ -86,6 +95,8 @@ let todoClass = function(){
             });
         }).then(function(){
             that.init();
+        }).then(function() {
+            that.render();
         });
     };
 
@@ -108,8 +119,13 @@ let todoClass = function(){
             return false;
         };
 
-        let setDoc = this.db.collection('items').doc(data.id + '').set(data);
-        this.init();
+        let setDoc = that.db.collection('items').doc(data.id + '').set(data).then(function(){
+            that.init();
+        });
+        
+        this.promise.then(function(){
+            that.render();
+        });
     };
     
     this.updateEventOnChange = function(){
@@ -117,7 +133,11 @@ let todoClass = function(){
            let elem = document.getElementById('checkbox_id_' + item.id);
            elem.onchange = function(event) {
                that.updateState(item.id);
-           }
+           };
+           let span = document.getElementById('delete_item_' + item.id);
+           span.onclick = function(event) {
+               that.deleteItem(item.id);
+           };
         });
     };
     
@@ -126,7 +146,7 @@ let todoClass = function(){
         if (item.completed) {
             checked = ' checked="checked"';
         }
-        return '<div class="todo-item"><input type="checkbox"' + checked + ' id="checkbox_id_' + item.id + '"><label for="checkbox_id_' + item.id + '">' + item.text + '</label><span class="deleteItem" onclick="deleteItem(' + item.id + ');">X</span></div>';
+        return '<div class="todo-item"><input type="checkbox"' + checked + ' id="checkbox_id_' + item.id + '"><label for="checkbox_id_' + item.id + '">' + item.text + '</label><span class="deleteItem" id="delete_item_' + item.id + '">X</span></div>';
     };
 
     this.render = function(){
@@ -135,6 +155,7 @@ let todoClass = function(){
             html += that.getHtmlItem(item);
         });
         document.getElementById('todo-items').innerHTML = html;
+        console.log(this.todosData);
         this.updateEventOnChange();
         this.block_multiclick = false;
     };

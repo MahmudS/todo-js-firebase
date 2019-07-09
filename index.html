@@ -29,6 +29,10 @@
             todoApp.initFirebase(firebase);
             todoApp.initDatabase();
             todoApp.init();
+
+            todoApp.promise.then(function(){
+                todoApp.render();
+            });
         }
     </script>
 </html>

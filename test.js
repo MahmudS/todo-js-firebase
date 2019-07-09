@@ -81,13 +81,32 @@ describe("compareNumeric (for function sort using field id)", function() {
         });
     });
 });
+
+todoApp.initFirebase(firebase);
+todoApp.initDatabase();
+let promise = new Promise(function(resolve, reject) {
+    resolve = todoApp.init();
+});
+promise.then(function(){
+    console.log('then test ok');
+    console.log(todoApp.todosData);
+}, function(){
+    console.log('then test error');
+});
+/*
+then(function(){
+    console.log('then test');
+    console.log(todoApp.todosData);
+});
+*/
+
 /*
 describe("init", function() {
-    
     it("check init", function() {
-        let todosData = [];
-        init();
-        assert(todosData.length > 0);
+        console.log(todoApp);
+        console.log(todoApp.todosData);
+        console.log(todoApp.todosData[0]);
+        assert.isTrue(todoApp.todosData.length > 0);
     });
 });
 */

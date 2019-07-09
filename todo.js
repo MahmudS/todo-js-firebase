@@ -7,6 +7,7 @@ let todoClass = function(){
     this.firebaseConfig = {};
     this.db;
     this.firebase;
+    this.addText = 'addText';
     
     this.getFirebaseConfig = function(){
         return {
@@ -25,6 +26,13 @@ let todoClass = function(){
         let b = +second.id;
         if (a > b) return 1;
         if (a < b) return -1;
+    };
+    
+    this.initAddButton = function(button_name){
+        let addTextButton = document.getElementById(button_name);
+        addTextButton.onclick = function(event) {
+            that.addSomeData();
+        }
     };
     
     this.initFirebase = function(firebase) {
@@ -84,7 +92,7 @@ let todoClass = function(){
     this.addSomeData = function() {
         let data = {
             id: this.getMaxId(this.todosData) + 1,
-            text: document.getElementById('addText').value,
+            text: document.getElementById(this.addText).value,
             completed: false
         };
 
@@ -130,9 +138,5 @@ let todoClass = function(){
         this.updateEventOnChange();
         this.block_multiclick = false;
     };
-    
-    addTextButton.onclick = function(event) {
-        this.addSomeData();
-    }
 };
 

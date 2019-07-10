@@ -2,7 +2,6 @@
 
 let todoClass = function(){
     let that = this;
-    this.block_multiclick = false;
     this.todosData = [];
     this.firebaseConfig = {};
     this.db;
@@ -32,7 +31,10 @@ let todoClass = function(){
     this.initAddButton = function(button_name){
         let addTextButton = document.getElementById(button_name);
         addTextButton.onclick = function(event) {
-            that.addSomeData();
+            let result = that.addSomeData();
+            if (!result.status) {
+                console.log(result.text);
+            }
         }
     };
     
@@ -56,7 +58,6 @@ let todoClass = function(){
             }).then(function(){
                 that.todosData.sort(that.compareNumeric);
             }).then(function(){
-                //that.render();
                 resolve();
             });
         });
@@ -68,36 +69,40 @@ let todoClass = function(){
         }, 0);
         return max;
     };
+    
+    this.getKeyForId = function(id) {
+        let result = false;
+        this.todosData.forEach(function(item, i, arr){
+            if (item.id === id) result = i;
+        });
+        return result;
+    }
 
     this.deleteItem = function(id) {
-        if (this.block_multiclick) return false;
-        this.block_multiclick = true;
-        this.db.collection('items').doc(id + '').delete().then(function() {
-            that.init();
-        });
-        
-        this.promise.then(function(){
+        let key = this.getKeyForId(id);
+        if (key !== false) {
+            this.todosData.splice(key, 1);
+            this.db.collection('items').doc(id + '').delete();
             that.render();
-        });
+        }
     };
 
     this.updateState = function(id) {
-        if (this.block_multiclick) return false;
-        this.block_multiclick = true;
-        let sfDocRef = this.db.collection('items').doc(id + '');
-        this.db.runTransaction(function(transaction) {
-            return transaction.get(sfDocRef).then(function(sfDoc) {
-                if (!sfDoc.exists) {
-                    throw "Document does not exist!";
-                }
-                let completed = !sfDoc.data().completed;
-                transaction.update(sfDocRef, { completed: completed });
+        let key = this.getKeyForId(id);
+        if (key !== false) {
+            this.todosData[key].completed = !this.todosData[key].completed;
+            let sfDocRef = this.db.collection('items').doc(id + '');
+            this.db.runTransaction(function(transaction) {
+                return transaction.get(sfDocRef).then(function(sfDoc) {
+                    if (!sfDoc.exists) {
+                        throw "Document does not exist!";
+                    }
+                    let completed = !sfDoc.data().completed;
+                    transaction.update(sfDocRef, { completed: completed });
+                });
             });
-        }).then(function(){
-            that.init();
-        }).then(function() {
             that.render();
-        });
+        }
     };
 
     this.addSomeData = function() {
@@ -106,26 +111,31 @@ let todoClass = function(){
             text: document.getElementById(this.addText).value,
             completed: false
         };
+        
+        let result = {
+            'status': true,
+            'text': 'ok'
+        }
 
         if (data.text === '') {
-            console.log('field is empty!');
-            return false;
+            result.status = false;
+            result.text = 'field is empty!';
+            return result;
         };
 
         if (this.todosData.some(function(todo){
             return todo.text === data.text;
         })) {
-            console.log('text "' + data.text + '" already exist!');
-            return false;
+            result.status = false;
+            result.text = 'text "' + data.text + '" already exist!';
+            return result;
         };
 
-        let setDoc = that.db.collection('items').doc(data.id + '').set(data).then(function(){
-            that.init();
-        });
+        this.todosData.push(data);
+        let setDoc = that.db.collection('items').doc(data.id + '').set(data);
+        that.render();
         
-        this.promise.then(function(){
-            that.render();
-        });
+        return result;
     };
     
     this.updateEventOnChange = function(){
@@ -155,9 +165,7 @@ let todoClass = function(){
             html += that.getHtmlItem(item);
         });
         document.getElementById('todo-items').innerHTML = html;
-        console.log(this.todosData);
         this.updateEventOnChange();
-        this.block_multiclick = false;
     };
 };
 

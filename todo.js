@@ -31,7 +31,8 @@ let todoClass = function(){
     this.initAddButton = function(button_name){
         let addTextButton = document.getElementById(button_name);
         addTextButton.onclick = function(event) {
-            let result = that.addSomeData();
+            let value = document.getElementById(that.addText).value;
+            let result = that.addSomeData(value);
             if (!result.status) {
                 console.log(result.text);
             }
@@ -57,7 +58,6 @@ let todoClass = function(){
                 });
             }).then(function(){
                 that.todosData.sort(that.compareNumeric);
-            }).then(function(){
                 resolve();
             });
         });
@@ -105,10 +105,10 @@ let todoClass = function(){
         }
     };
 
-    this.addSomeData = function() {
+    this.addSomeData = function(value) {
         let data = {
             id: this.getMaxId(this.todosData) + 1,
-            text: document.getElementById(this.addText).value,
+            text: value,
             completed: false
         };
         

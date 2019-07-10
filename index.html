@@ -9,8 +9,10 @@
         <div id="root">
             <div class="todo-list">
                 <div class="add-item">
-                    <input id="addText" name="addItem" type="text" value="">
-                    <button class="add-item-button" id="addTextButton">Add</button>
+                    <form method="POST" onsubmit="return false;">
+                        <input id="addText" name="addItem" type="text" value="">
+                        <button class="add-item-button" id="addTextButton">Add</button>
+                    </form>
                 </div>
                 
                 <div id="todo-items">

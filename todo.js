@@ -8,6 +8,7 @@ let todoClass = function(){
     this.firebase;
     this.addText = 'addText';
     this.promise;
+    this.testmode = false;
     
     this.getFirebaseConfig = function(){
         return {
@@ -82,7 +83,9 @@ let todoClass = function(){
         let key = this.getKeyForId(id);
         if (key !== false) {
             this.todosData.splice(key, 1);
-            this.db.collection('items').doc(id + '').delete();
+            if (!this.testmode) {
+                this.db.collection('items').doc(id + '').delete();
+            }
             that.render();
         }
     };
@@ -91,16 +94,18 @@ let todoClass = function(){
         let key = this.getKeyForId(id);
         if (key !== false) {
             this.todosData[key].completed = !this.todosData[key].completed;
-            let sfDocRef = this.db.collection('items').doc(id + '');
-            this.db.runTransaction(function(transaction) {
-                return transaction.get(sfDocRef).then(function(sfDoc) {
-                    if (!sfDoc.exists) {
-                        throw "Document does not exist!";
-                    }
-                    let completed = !sfDoc.data().completed;
-                    transaction.update(sfDocRef, { completed: completed });
+            if (!this.testmode) {
+                let sfDocRef = this.db.collection('items').doc(id + '');
+                this.db.runTransaction(function(transaction) {
+                    return transaction.get(sfDocRef).then(function(sfDoc) {
+                        if (!sfDoc.exists) {
+                            throw "Document does not exist!";
+                        }
+                        let completed = !sfDoc.data().completed;
+                        transaction.update(sfDocRef, { completed: completed });
+                    });
                 });
-            });
+            }
             that.render();
         }
     };
@@ -132,7 +137,9 @@ let todoClass = function(){
         };
 
         this.todosData.push(data);
-        let setDoc = that.db.collection('items').doc(data.id + '').set(data);
+        if (!this.testmode) {
+            let setDoc = that.db.collection('items').doc(data.id + '').set(data);
+        }
         that.render();
         
         return result;

@@ -3,6 +3,7 @@ let todoApp = new todoClass();
 todoApp.initFirebase(firebase);
 todoApp.initDatabase();
 todoApp.init();
+todoApp.testmode = true;
 
 todoApp.promise.then(function(){
     let config = todoApp.getFirebaseConfig();
@@ -143,7 +144,7 @@ todoApp.promise.then(function(){
         let positions = [-1, 0, Math.round(todoApp.todosData.length * 0.5), todoApp.todosData.length - 1];
         positions.forEach(function(pos, index, positions) {
             let length = todoApp.todosData.length;
-            if (pos !== -1) length--;
+            if ((pos >= 0) && (pos < todoApp.todosData.length)) length--;
             
             let position = false;
             let id = -1;

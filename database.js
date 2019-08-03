@@ -68,7 +68,7 @@ class database {
     }
 
     add(data) {
-        let setDoc = this.db.collection(this.collection).doc(data.id + '').set(data);
+        this.db.collection(this.collection).doc(data.id + '').set(data);
     }
 
     compareNumeric(first, second) {

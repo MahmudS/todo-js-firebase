@@ -18,10 +18,6 @@ class todoClass extends database {
         }
     };
     
-    load() {
-        super.load();
-    };
-
     getMaxId() {
         let max = this.todosData.reduce((max, todo) => {
           return (max > todo.id) ? max : todo.id;
@@ -31,7 +27,7 @@ class todoClass extends database {
     
     getKeyForId(id) {
         let result = false;
-        this.todosData.forEach((item, i, arr) => {
+        this.todosData.forEach((item, i) => {
             if (item.id === id) result = i;
         });
         return result;
@@ -39,24 +35,36 @@ class todoClass extends database {
 
     deleteItem(id) {
         let key = this.getKeyForId(id);
-        if (key !== false) {
+        if (key === false) return false;
+
+        if (this.testmode) {
             this.todosData.splice(key, 1);
-            if (!this.testmode) {
-                super.delete(id);
-            }
-            this.render();
+            return true;
         }
+
+        super.delete(id);
+        this.promise.then(() => {
+            this.todosData.splice(key, 1);
+            this.render();
+        }, (error) => {
+            console.log(error);
+        });
     };
 
     updateState(id) {
         let key = this.getKeyForId(id);
-        if (key !== false) {
+        if (key === false) return false;
+
+        if (this.testmode) {
             this.todosData[key].completed = !this.todosData[key].completed;
-            if (!this.testmode) {
-                super.update(id);
-            }
-            this.render();
+            return true;
         }
+
+        super.update(id);
+        this.promise.then(() => {
+            this.todosData[key].completed = !this.todosData[key].completed;
+            this.render();
+        });
     };
 
     addSomeData(value) {
@@ -73,7 +81,7 @@ class todoClass extends database {
 
         if (data.text === '') {
             result.status = false;
-            result.text = 'field is empty!';
+            result.text = `field is empty!`;
             return result;
         };
 
@@ -81,27 +89,31 @@ class todoClass extends database {
             return todo.text === data.text;
         })) {
             result.status = false;
-            result.text = 'text "' + data.text + '" already exist!';
+            result.text = `text "${data.text}" already exist!'`
             return result;
         };
 
-        this.todosData.push(data);
-        if (!this.testmode) {
-            super.add(data);
+        if (this.testmode) {
+            this.todosData.push(data);
+            return true;
         }
 
-        this.render();
+        super.add(data);
+        this.promise.then(() => {
+            this.todosData.push(data);
+            this.render();
+        });
         
         return result;
     };
     
     updateEventOnChange() {
-        this.todosData.forEach((item, i, arr) => {
-           let elem = document.getElementById('checkbox_id_' + item.id);
+        this.todosData.forEach((item) => {
+           let elem = document.getElementById(`checkbox_id_${item.id}`);
            elem.onchange = (event) => {
                this.updateState(item.id);
            };
-           let span = document.getElementById('delete_item_' + item.id);
+           let span = document.getElementById(`delete_item_${item.id}`);
            span.onclick = (event) => {
                this.deleteItem(item.id);
            };
@@ -109,19 +121,19 @@ class todoClass extends database {
     };
     
     getHtmlItem(item) {
-        let checked = '';
+        let checked = ``;
         if (item.completed) {
-            checked = ' checked="checked"';
+            checked = ` checked="checked"`;
         }
-        return '<div class="todo-item"><input type="checkbox"' + checked + ' id="checkbox_id_' + item.id + '"><label for="checkbox_id_' + item.id + '">' + item.text + '</label><span class="deleteItem" id="delete_item_' + item.id + '">X</span></div>';
+        return `<div class="todo-item"><input type="checkbox"${checked} id="checkbox_id_${item.id}"><label for="checkbox_id_${item.id}">${item.text}</label><span class="deleteItem" id="delete_item_${item.id}">X</span></div>`;
     };
 
     render(){
         let html = '';
-        this.todosData.forEach((item, i, arr) => {
+        this.todosData.forEach((item) => {
             html += this.getHtmlItem(item);
         });
-        document.getElementById('todo-items').innerHTML = html;
+        document.getElementById(`todo-items`).innerHTML = html;
         this.updateEventOnChange();
     };
 };

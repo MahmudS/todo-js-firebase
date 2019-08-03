@@ -23,17 +23,17 @@
     
     <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js" defer></script>
+    <script src="database.js" defer></script>
     <script src="todo.js" defer></script>
     <script>
+        
         let todoApp;
         
         function init_script() {
-            todoApp = new todoClass();
+            todoApp = new todoClass(firebase);
             todoApp.initAddButton('addTextButton');
-            todoApp.initFirebase(firebase);
-            todoApp.initDatabase();
-            todoApp.init();
-
+            todoApp.connect();
+            todoApp.load();
             todoApp.promise.then(function(){
                 todoApp.render();
             });

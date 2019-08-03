@@ -1,12 +1,10 @@
-let todoApp = new todoClass();
-
-todoApp.initFirebase(firebase);
-todoApp.initDatabase();
-todoApp.init();
+let todoApp = new todoClass(firebase);
 todoApp.testmode = true;
+todoApp.connect();
+todoApp.load();
 
 todoApp.promise.then(function(){
-    let config = todoApp.getFirebaseConfig();
+    let config = todoApp.config;
     
     describe("init", function() {
         it("init config with project id: " + config.projectId, function() {

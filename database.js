@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 class database {
     constructor(firebase) {
@@ -32,14 +32,17 @@ class database {
     }
 
     connect() {
-        this.firebase.initializeApp(this.config);
-        this.db = this.firebase.firestore();
+        return new Promise((resolve) => {
+            this.firebase.initializeApp(this.config);
+            this.db = this.firebase.firestore();
+            resolve();
+        })
     };
 
     load() {
         this.todosData = [];
-        this.promise = new Promise((resolve, reject) => {
-            let docRef =  this.db.collection(this.collection).get().then((querySnapshot) => {
+        return new Promise((resolve) => {
+            this.db.collection(this.collection).get().then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
                     this.todosData.push(doc.data());
                 });
@@ -51,24 +54,43 @@ class database {
     }
 
     delete(id) {
-        this.db.collection(this.collection).doc(id + '').delete();
+        return new Promise((resolve, reject) => {
+            return this.db.collection(this.collection).doc(id + '').delete().then(
+                () => {
+                    resolve();
+                }, (err) => {
+                    reject(err);
+                }
+            );
+        });
     }
 
     update(id) {
-        let docRef = this.db.collection(this.collection).doc(id + '');
-        this.db.runTransaction((transaction) => {
-            return transaction.get(docRef).then((sfDoc) => {
-                if (!sfDoc.exists) {
-                    throw "Document does not exist!";
-                }
-                let completed = !sfDoc.data().completed;
-                transaction.update(docRef, { completed: completed });
+        return new Promise((resolve, reject) => {
+            let docRef = this.db.collection(this.collection).doc(id + '');
+            this.db.runTransaction((transaction) => {
+                return transaction.get(docRef).then((sfDoc) => {
+                    if (!sfDoc.exists) {
+                        reject({err: "Document does not exist!"});
+                    }
+                    let completed = !sfDoc.data().completed;
+                    transaction.update(docRef, {completed: completed});
+                    resolve();
+                });
             });
         });
     }
 
     add(data) {
-        this.db.collection(this.collection).doc(data.id + '').set(data);
+        return new Promise((resolve, reject) => {
+            this.db.collection(this.collection).doc(data.id + '').set(data).then(
+                () => {
+                    resolve();
+                }, (err) => {
+                    reject(err);
+                }
+            );
+        });
     }
 
     compareNumeric(first, second) {

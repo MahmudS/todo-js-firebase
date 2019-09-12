@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 class todoClass extends database {
     constructor(firebase) {
@@ -10,6 +10,7 @@ class todoClass extends database {
     initAddButton(button_name) {
         let addTextButton = document.getElementById(button_name);
         addTextButton.onclick = (event) => {
+            console.log(event);
             let value = document.getElementById(this.addText).value;
             let result = this.addSomeData(value);
             if (!result.status) {
@@ -19,10 +20,9 @@ class todoClass extends database {
     };
     
     getMaxId() {
-        let max = this.todosData.reduce((max, todo) => {
+        return this.todosData.reduce((max, todo) => {
           return (max > todo.id) ? max : todo.id;
         }, 0);
-        return max;
     };
     
     getKeyForId(id) {
@@ -60,11 +60,13 @@ class todoClass extends database {
             return true;
         }
 
-        super.update(id);
-        this.promise.then(() => {
-            this.todosData[key].completed = !this.todosData[key].completed;
-            this.render();
-        });
+        super.update(id)
+        .then(
+            () => {
+                this.todosData[key].completed = !this.todosData[key].completed;
+                this.render();
+            }
+        );
     };
 
     addSomeData(value) {
@@ -77,21 +79,21 @@ class todoClass extends database {
         let result = {
             'status': true,
             'text': 'ok'
-        }
+        };
 
         if (data.text === '') {
             result.status = false;
             result.text = `field is empty!`;
             return result;
-        };
+        }
 
         if (this.todosData.some((todo) => {
             return todo.text === data.text;
         })) {
             result.status = false;
-            result.text = `text "${data.text}" already exist!'`
+            result.text = `text "${data.text}" already exist!'`;
             return result;
-        };
+        }
 
         if (this.testmode) {
             this.todosData.push(data);
@@ -111,10 +113,12 @@ class todoClass extends database {
         this.todosData.forEach((item) => {
            let elem = document.getElementById(`checkbox_id_${item.id}`);
            elem.onchange = (event) => {
+               console.log(event);
                this.updateState(item.id);
            };
            let span = document.getElementById(`delete_item_${item.id}`);
            span.onclick = (event) => {
+               console.log(event);
                this.deleteItem(item.id);
            };
         });
@@ -123,9 +127,9 @@ class todoClass extends database {
     getHtmlItem(item) {
         let checked = ``;
         if (item.completed) {
-            checked = ` checked="checked"`;
+            checked = `checked="checked"`;
         }
-        return `<div class="todo-item"><input type="checkbox"${checked} id="checkbox_id_${item.id}"><label for="checkbox_id_${item.id}">${item.text}</label><span class="deleteItem" id="delete_item_${item.id}">X</span></div>`;
+        return `<div class="todo-item"><input type="checkbox" ${checked} id="checkbox_id_${item.id}"><label for="checkbox_id_${item.id}">${item.text}</label><span class="deleteItem" id="delete_item_${item.id}">X</span></div>`;
     };
 
     render(){
@@ -136,5 +140,5 @@ class todoClass extends database {
         document.getElementById(`todo-items`).innerHTML = html;
         this.updateEventOnChange();
     };
-};
+}
 

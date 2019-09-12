@@ -10,7 +10,7 @@
             <div class="todo-list">
                 <div class="add-item">
                     <form method="POST" onsubmit="return false;">
-                        <input id="addText" name="addItem" type="text" value="">
+                        <label for="addText">Add</label><input id="addText" name="addItem" type="text" value=""/>
                         <button class="add-item-button" id="addTextButton">Add</button>
                     </form>
                 </div>
@@ -32,11 +32,21 @@
         function init_script() {
             todoApp = new todoClass(firebase);
             todoApp.initAddButton('addTextButton');
-            todoApp.connect();
-            todoApp.load();
-            todoApp.promise.then(function(){
-                todoApp.render();
-            });
+
+            let app = todoApp.connect();
+            app.then(
+                () => {
+                    return todoApp.load();
+                }
+            ).then(
+                () => {
+                    return todoApp.render();
+                }
+            ).catch(
+                (err) => {
+                    console.error(err);
+                }
+            )
         }
     </script>
 </html>
